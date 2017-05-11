@@ -1,0 +1,11 @@
+{
+  "name": "ExpressAnchoredPagination",
+  "version": "0.0.1",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "~1.17.0",
+    "express": "~4.15.0",
+    "mongodb": "^2.2.26",
+    "mongoose": "~4.9.0"
+  }
+}

@@ -1,0 +1,4 @@
+{
+    "httpPort": 3000,
+    "mongoConnection": "mongodb://localhost/pagination_server"
+}
