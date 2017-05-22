@@ -3,7 +3,7 @@ const router = express.Router();
 
 const Message = require('../models/message');
 
-router.get('/messages', function(req, res) {
+router.get('/messages', (req, res) => {
     const anchor = req.query.anchor || null;
     const direction = req.query.direction || 'backward';
     const isForwardDirection = direction === 'forward';
@@ -16,7 +16,7 @@ function responseMessages(res, anchor, isForwardDirection, limit) {
     if (anchor !== null) {
         Message.findOne({ _id: anchor })
             .select('createdAt')
-            .exec(function (err, message) {
+            .exec((err, message) => {
                 if (err) {
                     res.send(err);
                 } else {
@@ -25,7 +25,7 @@ function responseMessages(res, anchor, isForwardDirection, limit) {
 
                     Message.find({ createdAt: condition })
                         .limit(limit)
-                        .exec(function (err, messages) {
+                        .exec((err, messages) => {
                             if (err) {
                                 res.send(err);
                             } else {
@@ -38,7 +38,7 @@ function responseMessages(res, anchor, isForwardDirection, limit) {
         Message.find()
             .sort({ createdAt: isForwardDirection ? -1 : 1 })
             .limit(limit)
-            .exec(function(err, messages) {
+            .exec((err, messages) => {
                 if (err) {
                     res.send(err);
                 } else {
@@ -51,9 +51,9 @@ function responseMessages(res, anchor, isForwardDirection, limit) {
 router.post('/message/create', function(req, res) {
     const message = new Message();
     message.text = req.body.text;
-    message.createdAt = Date();
+    message.createdAt = new Date();
 
-    message.save(function(err) {
+    message.save(err => {
         if (err) {
             res.send(err);
         } else {
