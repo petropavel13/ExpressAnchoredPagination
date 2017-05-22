@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const Message = new Schema({
+const MessageModel = new Schema({
     text: String,
     createdAt: Date
 }, {
@@ -10,7 +10,7 @@ const Message = new Schema({
     timestamps: true // why this isn't working at all?!
 });
 
-Message.methods.toJSON = function() {
+MessageModel.methods.toJSON = function() {
     const obj = this.toObject();
     obj.id = obj._id;
     delete obj._id;
@@ -18,4 +18,4 @@ Message.methods.toJSON = function() {
     return obj;
 };
 
-module.exports = mongoose.model('Message', Message);
+export const Message = mongoose.model('Message', MessageModel);

@@ -1,6 +1,6 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+import express from 'express';
+import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
 
 const config = require('./config.json');
 
@@ -16,7 +16,7 @@ mongoose.Promise = global.Promise;
 mongoose.connect(config.mongoConnection);
 
 
-const messagesRouter = require('./app/routes/messages');
+import { router as messagesRouter } from './app/routes/messages';
 
 app.use('/api', messagesRouter);
 

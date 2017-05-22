@@ -1,7 +1,7 @@
-const express = require('express');
-const router = express.Router();
+import Router from 'express';
+export const router = Router();
 
-const Message = require('../models/message');
+import Message from '../models/message';
 
 router.get('/messages', (req, res) => {
     const anchor = req.query.anchor || null;
@@ -62,5 +62,3 @@ router.post('/message/create', function(req, res) {
     });
 
 });
-
-module.exports = router;
