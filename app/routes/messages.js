@@ -78,11 +78,15 @@ router.get('/messages', async (req, res, next) => {
     }
 });
 
-router.post('/message/create', (req, res) =>{
+router.post('/message/create', async (req, res, next) => {
     const body = req.body.text || "";
     const id = uuid();
 
-    db.run("INSERT INTO messages (id, body) VALUES (?, ?);", id, body);
+    try {
+        await db.run("INSERT INTO messages (id, body) VALUES (?, ?);", id, body);
 
-    res.json({ message: 'New message created with id: ' + id });
+        res.json({message: 'New message created with id: ' + id});
+    } catch (err) {
+        next(err);
+    }
 });
