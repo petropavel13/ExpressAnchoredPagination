@@ -1,6 +1,7 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
+import db from 'sqlite';
+import Promise from 'bluebird';
 
 const config = require('./config.json');
 
@@ -11,13 +12,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-mongoose.Promise = global.Promise;
-
-mongoose.connect(config.mongoConnection);
-
-
 import { router as messagesRouter } from './app/routes/messages';
 
 app.use('/api', messagesRouter);
 
-app.listen(config.httpPort);
+Promise.resolve()
+    .then(() => db.open('./pagination.sqlite', { Promise }))
+    .then(() => db.migrate({ force: 'last' }))
+    .catch((err) => console.error(err.stack))
+    .finally(() => app.listen(config.httpPort));
