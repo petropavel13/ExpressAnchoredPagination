@@ -54,7 +54,7 @@ async function responseAll(limit, offset, res) {
     res.json(messages);
 }
 
-router.get('/messages', async (req, res, next) => {
+router.post('/messages/listing', async (req, res, next) => {
     const sinceId = req.query.since_id || null;
     const tillId = req.query.till_id || null;
     const offset = parseInt(req.query.offset) || 0;
