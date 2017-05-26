@@ -5,7 +5,7 @@ import db from 'sqlite';
 
 import uuid from 'uuid';
 
-async function responseSinceTill(sinceId, tillId, offset, limit, res) {
+async function responseSinceTill(sinceId, tillId, limit, offset, res) {
     const sinceTillCreatedDates = await db.all("SELECT created_at " +
         "FROM messages " +
         "WHERE id IN (?, ?) " +
@@ -55,17 +55,17 @@ async function responseAll(limit, offset, res) {
 }
 
 router.post('/message/listing', async (req, res, next) => {
-    const sinceId = req.query.since_id || null;
-    const tillId = req.query.till_id || null;
-    const offset = parseInt(req.query.offset) || 0;
-    const limit = parseInt(req.query.limit) || 20;
+    const sinceId = req.body.since_id || null;
+    const tillId = req.body.till_id || null;
+    const offset = parseInt(req.body.offset) || 0;
+    const limit = parseInt(req.body.limit) || 20;
 
     let sinceNotEmpty = sinceId !== null;
     let tillNotEmpty = tillId !== null;
 
     try {
         if (sinceNotEmpty && tillNotEmpty) {
-            await responseSinceTill(sinceId, tillId, offset, limit, res);
+            await responseSinceTill(sinceId, tillId, limit, offset, res);
         } else if (sinceNotEmpty || tillNotEmpty) {
             const anchor = sinceId || tillId;
 
