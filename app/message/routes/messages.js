@@ -1,92 +1,45 @@
 import Router from 'express';
-export const router = Router();
+import { queryAll, queryAnchor, querySinceTill, create } from '../logic/query';
 
-import db from 'sqlite';
+export function messagesRouter(messageModel) {
+    const router = Router();
 
-import uuid from 'uuid';
+    router.post('/message/listing', async (req, res, next) => {
+        const sinceId = req.body.since_id || null;
+        const tillId = req.body.till_id || null;
+        const offset = parseInt(req.body.offset) || 0;
+        const limit = parseInt(req.body.limit) || 20;
 
-async function responseSinceTill(sinceId, tillId, limit, offset, res) {
-    const sinceTillCreatedDates = await db.all("SELECT created_at " +
-        "FROM messages " +
-        "WHERE id IN (?, ?) " +
-        "ORDER BY CASE WHEN " +
-        "id = ? THEN 1 " +
-        "ELSE 2 END;", sinceId, tillId, sinceId);
+        let sinceNotEmpty = sinceId !== null;
+        let tillNotEmpty = tillId !== null;
 
-    if (sinceTillCreatedDates !== undefined && sinceTillCreatedDates.length > 1) {
-        const sinceCreatedDate = sinceTillCreatedDates[0]['created_at'];
-        const tillCreatedDate = sinceTillCreatedDates[1]['created_at'];
+        try {
+            if (sinceNotEmpty && tillNotEmpty) {
+                res.json(await querySinceTill(messageModel, sinceId, tillId, limit, offset));
+            } else if (sinceNotEmpty || tillNotEmpty) {
+                const anchor = sinceId || tillId;
 
-        const messages = await db.all("SELECT id, created_at, body " +
-            "FROM messages " +
-            "WHERE created_at > ? AND created_at < ? " +
-            "ORDER BY created_at ASC " +
-            "LIMIT ?" +
-            "OFFSET ?;", sinceCreatedDate, tillCreatedDate, limit, offset);
-
-        res.json(messages);
-    } else {
-        res.json([]);
-    }
-}
-
-async function responseAnchor(since, anchor, limit, offset, res) {
-    const query = "SELECT m.id, m.created_at, m.body " +
-        "FROM messages m " +
-        "JOIN messages md ON md.created_at " + (since ? "<" : ">") + " m.created_at " +
-        "WHERE md.id = ? " +
-        "ORDER BY m.created_at ASC " +
-        "LIMIT ?" +
-        "OFFSET ?";
-    
-    const messages = await db.all(query, anchor, limit, offset);
-
-    res.json(messages);
-}
-
-async function responseAll(limit, offset, res) {
-    const messages = await db.all("SELECT id, created_at, body " +
-        "FROM messages " +
-        "ORDER BY created_at ASC " +
-        "LIMIT ?" +
-        "OFFSET ?;", limit, offset);
-
-    res.json(messages);
-}
-
-router.post('/message/listing', async (req, res, next) => {
-    const sinceId = req.body.since_id || null;
-    const tillId = req.body.till_id || null;
-    const offset = parseInt(req.body.offset) || 0;
-    const limit = parseInt(req.body.limit) || 20;
-
-    let sinceNotEmpty = sinceId !== null;
-    let tillNotEmpty = tillId !== null;
-
-    try {
-        if (sinceNotEmpty && tillNotEmpty) {
-            await responseSinceTill(sinceId, tillId, limit, offset, res);
-        } else if (sinceNotEmpty || tillNotEmpty) {
-            const anchor = sinceId || tillId;
-
-            await responseAnchor(sinceNotEmpty, anchor, limit, offset, res);
-        } else {
-            await responseAll(limit, offset, res);
+                res.json(await queryAnchor(messageModel, sinceNotEmpty, anchor, limit, offset));
+            } else {
+                res.json(await queryAll(messageModel, limit, offset));
+            }
+        } catch (err) {
+            next(err);
         }
-    } catch (err) {
-        next(err);
-    }
-});
+    });
 
-router.post('/message/create', async (req, res, next) => {
-    const body = req.body.text || "";
-    const id = uuid();
+    router.post('/message/create', async (req, res, next) => {
+        const body = req.body.text || "";
 
-    try {
-        await db.run("INSERT INTO messages (id, body) VALUES (?, ?);", id, body);
 
-        res.json({message: 'New message created with id: ' + id});
-    } catch (err) {
-        next(err);
-    }
-});
+        try {
+            const newMessage = await create(messageModel, body);
+
+            res.json({message: 'New message created with id: ' + newMessage.id});
+        } catch (err) {
+            next(err);
+        }
+    });
+
+    return router;
+}

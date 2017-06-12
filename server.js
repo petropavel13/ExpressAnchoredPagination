@@ -1,23 +1,27 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import db from 'sqlite';
 import Promise from 'bluebird';
+import Sequelize from 'sequelize';
 
 const config = require('./config.json');
 
 const app = express();
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-import { router as messagesRouter } from './app/message/routes/messages';
+import { syncMessages } from './app/message/logic/sync';
+import { messageModel } from './app/message/models/message';
 
-app.use('/api', messagesRouter);
+import { messagesRouter } from './app/message/routes/messages';
 
 Promise.resolve()
-    .then(() => db.open('./pagination.sqlite', { Promise }))
-    .then(() => db.migrate({ force: 'last' }))
+    .then(() => new Sequelize('sqlite://messages.db'))
+    .then((sequelize) => messageModel(sequelize))
+    .then((Message) => {
+        syncMessages(Message);
+        app.use('/api', messagesRouter(Message));
+    })
     .catch((err) => console.error(err.stack))
     .finally(() => app.listen(config.httpPort));
