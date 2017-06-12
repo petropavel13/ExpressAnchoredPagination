@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-import { router as messagesRouter } from './app/routes/messages';
+import { router as messagesRouter } from './app/message/routes/messages';
 
 app.use('/api', messagesRouter);
 
